@@ -14,7 +14,7 @@
     x:CompileBindings="True"
     x:DataType="viewModels:ModManagerViewModel"
     Focusable="True">
-   <Grid>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -86,27 +86,13 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Grid
-                                    Grid.Column="0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"></ColumnDefinition>
-                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        Grid.Column="0"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        MaxLines="2"
-                                        TextWrapping="Wrap"
-                                        TextTrimming="CharacterEllipsis" />
-                                        <!-- Text="{Binding FileName}" /> -->
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        Margin="10 0"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center" />
-                                        <!-- Text="{Binding TitleId}" /> -->
-                                </Grid>
+                                <TextBlock
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    MaxLines="2"
+                                    TextWrapping="Wrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    Text="{Binding FileName}" />
                                 <StackPanel
                                     Grid.Column="1"
                                     Spacing="10"

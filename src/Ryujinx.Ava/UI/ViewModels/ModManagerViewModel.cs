@@ -94,7 +94,32 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Save()
         {
-            throw new System.NotImplementedException();
+
         }
+
+        public void Remove(ModModel model)
+        {
+            Mods.Remove(model);
+            OnPropertyChanged(nameof(ModCount));
+            Sort();
+        }
+
+        public void RemoveAll()
+        {
+            Mods.Clear();
+            OnPropertyChanged(nameof(ModCount));
+            Sort();
+        }
+
+        public void EnableAll()
+        {
+            SelectedMods = new(Mods);
+        }
+
+        public void DisableAll()
+        {
+            SelectedMods.Clear();
+        }
+
     }
 }

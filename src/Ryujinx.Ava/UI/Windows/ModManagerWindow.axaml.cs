@@ -4,9 +4,12 @@ using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Ui.Common.Helper;
 using System.Threading.Tasks;
+using Button = Avalonia.Controls.Button;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -14,11 +17,18 @@ namespace Ryujinx.Ava.UI.Windows
     {
         public ModManagerViewModel ViewModel;
 
-        public ModManagerWindow() { }
+        public ModManagerWindow()
+        {
+            DataContext = this;
+
+            InitializeComponent();
+        }
 
         public ModManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             DataContext = ViewModel = new ModManagerViewModel();
+
+            InitializeComponent();
         }
 
         public static async Task Show(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
@@ -43,7 +53,7 @@ namespace Ryujinx.Ava.UI.Windows
         private void SaveAndClose(object sender, RoutedEventArgs e)
         {
             ViewModel.Save();
-                ((ContentDialog)Parent).Hide();
+            ((ContentDialog)Parent).Hide();
         }
 
         private void Close(object sender, RoutedEventArgs e)
@@ -53,17 +63,53 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void RemoveMod(object sender, RoutedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            if (sender is Button button)
+            {
+                if (button.DataContext is ModModel model)
+                {
+                    ViewModel.Remove(model);
+                }
+            }
         }
 
         private void OpenLocation(object sender, RoutedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            if (sender is Button button)
+            {
+                if (button.DataContext is ModModel model)
+                {
+                    OpenHelper.LocateFile(model.ContainerPath);
+                }
+            }
         }
 
         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            foreach (var content in e.AddedItems)
+            {
+                if (content is ModModel model)
+                {
+                    var index = ViewModel.Mods.IndexOf(model);
+
+                    if (index != -1)
+                    {
+                        ViewModel.Mods[index].Enabled = true;
+                    }
+                }
+            }
+
+            foreach (var content in e.RemovedItems)
+            {
+                if (content is ModModel model)
+                {
+                    var index = ViewModel.Mods.IndexOf(model);
+
+                    if (index != -1)
+                    {
+                        ViewModel.Mods[index].Enabled = false;
+                    }
+                }
+            }
         }
     }
 }
