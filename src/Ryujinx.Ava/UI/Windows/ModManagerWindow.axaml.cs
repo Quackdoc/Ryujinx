@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -37,6 +38,32 @@ namespace Ryujinx.Ava.UI.Windows
             contentDialog.Styles.Add(bottomBorder);
 
             await ContentDialogHelper.ShowAsync(contentDialog);
+        }
+
+        private void SaveAndClose(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Save();
+                ((ContentDialog)Parent).Hide();
+        }
+
+        private void Close(object sender, RoutedEventArgs e)
+        {
+            ((ContentDialog)Parent).Hide();
+        }
+
+        private void RemoveMod(object sender, RoutedEventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void OpenLocation(object sender, RoutedEventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
