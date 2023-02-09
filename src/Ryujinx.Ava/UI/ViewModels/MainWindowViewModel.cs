@@ -1360,6 +1360,164 @@ namespace Ryujinx.Ava.UI.ViewModels
             AppHost.Device.System.SimulateWakeUpMessage();
         }
 
+        public async void PurgeShaderCache()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                DirectoryInfo shaderCacheDir = new(Path.Combine(AppDataManager.GamesDirPath, selection.TitleId, "cache", "shader"));
+
+                // FIXME: Found a way to reproduce the bold effect on the title name (fork?).
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance[LocaleKeys.DialogWarning],
+                                                                                       LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogShaderDeletionMessage, selection.TitleName),
+                                                                                       LocaleManager.Instance[LocaleKeys.InputDialogYes],
+                                                                                       LocaleManager.Instance[LocaleKeys.InputDialogNo],
+                                                                                       LocaleManager.Instance[LocaleKeys.RyujinxConfirm]);
+
+                List<DirectoryInfo> oldCacheDirectories = new();
+                List<FileInfo> newCacheFiles = new();
+
+                if (shaderCacheDir.Exists)
+                {
+                    oldCacheDirectories.AddRange(shaderCacheDir.EnumerateDirectories("*"));
+                    newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.toc"));
+                    newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.data"));
+                }
+
+                if ((oldCacheDirectories.Count > 0 || newCacheFiles.Count > 0) && result == UserResult.Yes)
+                {
+                    foreach (DirectoryInfo directory in oldCacheDirectories)
+                    {
+                        try
+                        {
+                            directory.Delete(true);
+                        }
+                        catch (Exception e)
+                        {
+                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogPPTCDeletionErrorMessage, directory.Name, e));
+                        }
+                    }
+                }
+
+                foreach (FileInfo file in newCacheFiles)
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception e)
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.ShaderCachePurgeError, file.Name, e));
+                    }
+                }
+            }
+        }
+
+        public void ToggleFavorite()
+        {
+            ApplicationData selection = SelectedApplication;
+            if (selection != null)
+            {
+                selection.Favorite = !selection.Favorite;
+
+                ApplicationLibrary.LoadAndSaveMetaData(selection.TitleId, appMetadata =>
+                {
+                    appMetadata.Favorite = selection.Favorite;
+                });
+
+                RefreshView();
+            }
+        }
+
+        public void OpenUserSaveDirectory()
+        {
+            OpenSaveDirectory(SaveDataType.Account, userId: new UserId((ulong)AccountManager.LastOpenedUser.UserId.High, (ulong)AccountManager.LastOpenedUser.UserId.Low));
+        }
+
+        public void OpenDeviceSaveDirectory()
+        {
+            OpenSaveDirectory(SaveDataType.Device, userId: default);
+        }
+
+        public void OpenBcatSaveDirectory()
+        {
+            OpenSaveDirectory(SaveDataType.Bcat, userId: default);
+        }
+
+        private void OpenSaveDirectory(SaveDataType saveDataType, UserId userId)
+        {
+            if (SelectedApplication != null)
+            {
+                if (!ulong.TryParse(SelectedApplication.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNumber))
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogRyujinxErrorMessage], LocaleManager.Instance[LocaleKeys.DialogInvalidTitleIdErrorMessage]);
+                    });
+
+                    return;
+                }
+
+                var saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveDataType, userId, saveDataId: default, index: default);
+
+                ApplicationHelper.OpenSaveDir(in saveDataFilter, titleIdNumber, SelectedApplication.ControlHolder, SelectedApplication.TitleName);
+            }
+        }
+
+        public void OpenModsDirectory()
+        {
+            if (SelectedApplication != null)
+            {
+                string modsBasePath  = VirtualFileSystem.ModLoader.GetModsBasePath();
+                string titleModsPath = VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, SelectedApplication.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public void OpenSdModsDirectory()
+        {
+            if (SelectedApplication != null)
+            {
+                string sdModsBasePath = VirtualFileSystem.ModLoader.GetSdModsBasePath();
+                string titleModsPath  = VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, SelectedApplication.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public async void OpenTitleUpdateManager()
+        {
+            if (SelectedApplication != null)
+            {
+                await TitleUpdateWindow.Show(VirtualFileSystem, ulong.Parse(SelectedApplication.TitleId, NumberStyles.HexNumber), SelectedApplication.TitleName);
+            }
+        }
+
+        public async void OpenDownloadableContentManager()
+        {
+            if (SelectedApplication != null)
+            {
+                await DownloadableContentManagerWindow.Show(VirtualFileSystem, ulong.Parse(SelectedApplication.TitleId, NumberStyles.HexNumber), SelectedApplication.TitleName);
+            }
+        }
+
+        public async void OpenCheatManager()
+        {
+            if (SelectedApplication != null)
+            {
+                await new CheatWindow(VirtualFileSystem, SelectedApplication.TitleId, SelectedApplication.TitleName).ShowDialog(TopLevel as Window);
+            }
+        }
+
+        public async void OpenModManager()
+        {
+            if (SelectedApplication != null)
+            {
+                await ModManagerWindow.Show(VirtualFileSystem, ulong.Parse(SelectedApplication.TitleId, NumberStyles.HexNumber), SelectedApplication.TitleName);
+            }
+        }
+
         public async void LoadApplications()
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
