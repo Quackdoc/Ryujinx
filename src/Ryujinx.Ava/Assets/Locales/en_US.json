@@ -585,7 +585,7 @@
   "UserProfileWindowTitle": "User Profiles Manager",
   "CheatWindowTitle": "Cheats Manager",
   "DlcWindowTitle": "Downloadable Content Manager",
-  "ModWindowTitle" : "Mod Manager",
+  "ModWindowTitle" : "Manage Mods for {0} ({1})",
   "UpdateWindowTitle": "Title Update Manager",
   "CheatWindowHeading": "Cheats Available for {0} [{1}]",
   "DlcWindowHeading": "{0} Downloadable Content(s) available for {1} ({2})",
